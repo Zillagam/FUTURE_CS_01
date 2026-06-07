@@ -1,0 +1,52 @@
+CANVA REPORT — INSTRUCTIONS
+============================
+
+How to create your Canva Vulnerability Assessment Report:
+
+STEP 1 — Go to canva.com and sign in
+
+STEP 2 — Click "Create a design" → choose "A4 Document"
+
+STEP 3 — Use this colour palette (copy hex codes):
+  Navy background:  #1B2A4A
+  High risk red:    #C0392B
+  Medium amber:     #D68910
+  Low green:        #1E8449
+  Light background: #F4F6F9
+  Body text:        #4A4A4A
+
+STEP 4 — Page layout (8 pages total):
+
+  Page 1 — COVER
+    Navy background, white title text
+    "WEB APPLICATION SECURITY AUDIT REPORT"
+    Target, analyst name, date, grade badge
+
+  Page 2 — EXECUTIVE SUMMARY
+    Score cards: 3 HIGH (red) | 3 MEDIUM (amber) | 4 LOW (green) | Grade D (navy)
+    Summary paragraph
+
+  Page 3 — SCOPE & METHODOLOGY
+    Table with target, tools, method, in/out of scope
+
+  Pages 4-5 — FINDINGS (5 per page)
+    Each finding card: coloured header + 4 rows (issue / why / evidence / fix)
+
+  Page 6 — TOOL OUTPUTS
+    Code-style text boxes with curl, DevTools, Nmap outputs
+
+  Page 7 — REMEDIATION ROADMAP
+    Priority table with effort estimates
+
+  Page 8 — CONCLUSION + ETHICS STATEMENT
+
+STEP 5 — Export as PDF (File → Download → PDF Standard)
+
+STEP 6 — Upload PDF to your GitHub repo under /report/
+
+CANVA TEMPLATE SEARCH TERMS:
+  Search "cybersecurity report" or "professional audit report"
+  in Canva templates for a matching base design.
+
+NOTE: The full PDF report is already generated at:
+  Vulnerability_Assessment_Report_DVWA.pdf
