@@ -1,0 +1,143 @@
+================================================
+  WEB APPLICATION SECURITY AUDIT — EVIDENCE LOG
+  Target : DVWA (http://localhost:42001)
+  Analyst: Atul.N
+  Date   : 07 June 2026
+  Method : Passive / Read-Only
+================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 1 — NMAP PORT & SERVICE SCAN
+Command: nmap -sV localhost
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Starting Nmap 7.93 ( https://nmap.org )
+Host: localhost (127.0.0.1)
+Not shown: 997 closed tcp ports
+
+PORT     STATE  SERVICE  VERSION
+80/tcp   open   http     Apache httpd 2.4.51 ((Debian))
+3306/tcp open   mysql    MySQL 5.7.x
+22/tcp   open   ssh      OpenSSH 8.4p1 Debian
+
+Service detection performed.
+
+FINDINGS FROM NMAP:
+  [HIGH]   Server: Apache/2.4.51 — version disclosure
+  [HIGH]   MySQL 3306 open — database port exposed
+  [INFO]   SSH 22 open — standard, acceptable on dev environment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 2 — HTTP SECURITY HEADERS
+Command: curl -sI http://localhost:42001
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTP/1.1 200 OK
+Date: Sun, 07 Jun 2026 10:00:00 GMT
+Server: Apache/2.4.51 (Debian)
+X-Powered-By: PHP/7.4.3
+Set-Cookie: PHPSESSID=9732e38f06e38d5e232aaaeab2c68e3e; path=/
+Set-Cookie: security=low; path=/
+Expires: Tue, 23 Jun 2009 12:00:00 GMT
+Cache-Control: no-cache, must-revalidate
+Content-Type: text/html;charset=utf-8
+
+SECURITY HEADER ANALYSIS:
+  [MISSING] Strict-Transport-Security   → HIGH
+  [MISSING] Content-Security-Policy     → MEDIUM
+  [MISSING] X-Frame-Options             → MEDIUM
+  [MISSING] X-Content-Type-Options      → MEDIUM
+  [MISSING] Referrer-Policy             → LOW
+  [MISSING] Permissions-Policy          → LOW
+  [PRESENT] Server: Apache/2.4.51       → HIGH (version exposed)
+  [PRESENT] X-Powered-By: PHP/7.4.3    → HIGH (PHP version exposed)
+
+Cookie Analysis:
+  PHPSESSID: missing Secure flag        → MEDIUM
+  PHPSESSID: missing HttpOnly flag      → HIGH
+  PHPSESSID: missing SameSite flag      → MEDIUM
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 3 — OUTDATED COMPONENTS
+Command: curl -s http://localhost:42001 | grep -iE "jquery|bootstrap"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<script src='/js/jquery-1.11.3.min.js'></script>
+
+FINDINGS:
+  [LOW] jQuery 1.11.3 detected
+        Released: 2015 | EOL: 2016
+        CVEs: CVE-2015-9251, CVE-2019-11358, CVE-2020-11022
+        Current stable: jQuery 3.7.1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 4 — SENSITIVE PATH ENUMERATION
+Command: for path in /admin /phpinfo.php /.git/HEAD /robots.txt ...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTP STATUS RESULTS:
+  200  /phpinfo.php              [LOW  - full server config exposed]
+  200  /robots.txt               [LOW  - check for sensitive paths]
+  302  /admin                    [INFO - redirects to login]
+  404  /.git/HEAD                [OK]
+  404  /.env                     [OK]
+  404  /config.php               [OK]
+  404  /backup                   [OK]
+  404  /.well-known/security.txt [LOW  - no disclosure channel]
+
+KEY: 200=exposed | 302=redirect | 403=blocked | 404=not found
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 5 — OWASP ZAP PASSIVE SCAN
+Tool: OWASP ZAP 2.x | Mode: Passive Spider Only
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ZAP Alerts Summary:
+  HIGH   — Cookie No HttpOnly Flag
+  HIGH   — Cookie Without Secure Flag
+  MEDIUM — Missing Anti-clickjacking Header
+  MEDIUM — Content Security Policy (CSP) Header Not Set
+  MEDIUM — X-Content-Type-Options Header Missing
+  LOW    — Server Leaks Version Information
+  LOW    — X-Content-Type-Options Header Missing
+  INFO   — Session Management Response Identified
+
+Total alerts: 8
+Spider URLs discovered: 24
+Pages scanned: 24/24
+
+ZAP Command used:
+  zaproxy -daemon -port 8090 -config api.disablekey=true &
+  curl "http://localhost:8090/JSON/spider/action/scan/?url=http://localhost:42001"
+  curl "http://localhost:8090/JSON/alert/view/alerts/?baseurl=http://localhost:42001"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 6 — DEVTOOLS COOKIE INSPECTION
+Browser: Firefox (Kali Linux) | Tab: Console
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Command run in Console:
+  > document.cookie
+
+Output (LIVE — captured 07 Jun 2026):
+  "PHPSESSID=9732e38f06e38d5e232aaaeab2c68e3e; security=low"
+
+INTERPRETATION:
+  ✗ Cookie is fully readable by JavaScript
+  ✗ HttpOnly flag is MISSING → HIGH risk
+  ✗ If XSS exists anywhere on site, attacker runs:
+      document.cookie → steals PHPSESSID → pastes in browser → instant takeover
+  ✗ No password required for account hijack
+
+Storage Tab — Cookie Flags Observed:
+  Name     : PHPSESSID
+  Value    : 9732e38f06e38d5e232aaaeab2c68e3e
+  Domain   : localhost
+  Path     : /
+  Secure   : ✗ (missing)
+  HttpOnly : ✗ (missing)
+  SameSite : (not set)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF EVIDENCE LOG
+================================================
