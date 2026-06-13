@@ -1,211 +1,132 @@
-# Web Application Security Audit — DVWA
+# Phishing Email Detection & Awareness System
 
-> **Passive Vulnerability Assessment | GITAM University | CSE Cyber Security**
+**Future Interns — Cyber Security Task 2 (2026)**
 
----
-
-## Overview
-
-This repository contains the complete deliverables for a passive, read-only web application security audit conducted on **DVWA (Damn Vulnerable Web Application)** as part of a security consulting learning exercise.
-
-**Analyst:** Atul.N
-**Date:** 07 June 2026
-**Overall Risk Grade:** `D` — 3 High · 3 Medium · 4 Low findings
+Prepared by: **Atul** | Roll No: 2023003147
+B.Tech CSE — Cyber Security, GITAM University, Hyderabad
 
 ---
 
-## Repository Structure
+## 📌 Overview
+
+This repository contains a complete phishing email detection and awareness
+analysis. Working in the role of a security analyst, four real-world style
+phishing email samples were collected, analyzed for indicators of compromise,
+classified by risk level, and documented in a professional client-ready
+report — along with prevention and awareness guidelines for employees.
+
+**This is security education and analysis — not hacking.** No real
+organizations, individuals, or systems were targeted. All domains and
+infrastructure referenced (e.g. `attacker-server.com`, `192.0.2.145`) are
+either constructed examples or reserved documentation ranges (RFC 5737
+TEST-NET).
+
+---
+
+## 📁 Repository Structure
 
 ```
-web-security-audit-dvwa/
-│
-├── README.md                          ← This file
-│
 ├── report/
-│   └── Vulnerability_Assessment_Report_DVWA.pdf   ← Full audit report
-│
+│   └── Phishing_Detection_Report_Atul_GITAM.docx   ← Full report (deliverable)
+├── samples/
+│   ├── sample1_amazon_verification.txt             ← Amazon account scam
+│   ├── sample2_sbi_otp_theft.txt                   ← SBI bank OTP scam
+│   ├── sample3_it_helpdesk_reset.txt               ← IT helpdesk impersonation
+│   └── sample4_wellsfargo_spoofing_headers.txt     ← Wells Fargo header spoofing
 ├── evidence/
-│   └── tool_outputs.txt               ← All raw tool outputs documented
-│
-└── canva/
-    └── canva_report_link.txt          ← Link to Canva-designed report
+│   └── sample4_google_toolbox_spf_fail.png         ← Header analyzer screenshot
+└── README.md
 ```
 
 ---
 
-## Website Tested
+## 🛠 Tools Used
 
-| Field         | Value |
-|---------------|-------|
-| **Target**    | DVWA — Damn Vulnerable Web Application |
-| **URL**       | `http://localhost:42001` (local install on Kali Linux) |
-| **What it is**| An intentionally vulnerable PHP web app used for security training |
-| **Why chosen**| Legal to test, realistic vulnerabilities, no third-party harm |
-
-> ⚠️ **Ethics Note:** All testing was performed on a locally-hosted intentionally-vulnerable application. No real production systems, third-party sites, or external infrastructure were targeted at any point.
-
----
-
-## Scope
-
-### ✅ In Scope (Allowed)
-- HTTP response headers analysis
-- TLS/HTTPS configuration checks
-- Cookie security flag inspection
-- Publicly accessible path enumeration (HTTP status codes only)
-- Client-side JavaScript library version detection
-- Passive automated scanning (OWASP ZAP spider mode)
-
-### ❌ Out of Scope (Not Allowed)
-- Login bypass or authentication attacks
-- SQL injection or any exploitation
-- Brute force or credential stuffing
-- Denial-of-Service (DoS) or flooding
-- File upload exploitation
-- Any active attack against any real website
+| Tool | Purpose |
+|---|---|
+| [Google Admin Toolbox — Messageheader](https://toolbox.googleapps.com/apps/messageheader/) | Parses raw email headers, evaluates SPF/DKIM/DMARC, visualizes delivery route |
+| [MXToolbox Email Header Analyzer](https://mxtoolbox.com/EmailHeaders.aspx) | Cross-checks header authentication results and sender IP reputation |
+| [PhishTank](https://phishtank.org) / [OpenPhish](https://openphish.com) | Public phishing URL/sample feeds used for indicator research |
+| [WHOIS (who.is)](https://who.is) | Domain registration age, registrar, ownership lookups |
+| [MXToolbox SuperTool](https://mxtoolbox.com/SuperTool.aspx) | SPF and DMARC record lookups for sender domains |
+| [URLScan.io](https://urlscan.io) | Safe sandboxed analysis of suspicious URLs |
+| [VirusTotal](https://virustotal.com) | URL/file reputation scanning against 70+ AV engines |
+| Kali Linux CLI (`whois`, `dig`, `curl`, `nslookup`) | Command-line domain, DNS, and link investigation |
+| Microsoft Word (via `docx` library) | Final report generation and formatting |
 
 ---
 
-## Tools Used
+## 🔍 Analysis Approach
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **Kali Linux** | 2024.x | Operating system / audit platform |
-| **Nmap** | 7.93 | Port scanning and service version detection |
-| **curl** | 7.88 | HTTP header analysis and path enumeration |
-| **OWASP ZAP** | 2.14 | Passive spider and automated alert collection |
-| **Firefox DevTools** | Built-in | Cookie flag inspection, live console testing |
-| **Canva** | Web | Professional report design |
+The investigation followed a structured 7-step workflow used by real security
+analysts when triaging suspected phishing emails:
 
----
+1. **Collect samples** — Gathered 4 phishing email samples representing
+   common attack patterns (brand impersonation, banking fraud, internal IT
+   impersonation, and domain spoofing).
 
-## Findings Summary
+2. **Analyze headers** — Extracted and reviewed `From`, `Reply-To`,
+   `Return-Path`, `Received`, and `Authentication-Results` fields using the
+   Google Admin Toolbox and MXToolbox header analyzers.
 
-| ID | Finding | Risk |
-|----|---------|------|
-| F1 | Session cookie missing HttpOnly flag | 🔴 HIGH |
-| F2 | Missing HTTP Strict-Transport-Security (HSTS) | 🔴 HIGH |
-| F3 | Server version banner exposed | 🔴 HIGH |
-| F4 | Missing Content-Security-Policy header | 🟡 MEDIUM |
-| F5 | Missing X-Frame-Options header | 🟡 MEDIUM |
-| F6 | Missing X-Content-Type-Options header | 🟡 MEDIUM |
-| F7 | Outdated jQuery version (1.11.3) | 🟢 LOW |
-| F8 | phpinfo.php publicly accessible | 🟢 LOW |
-| F9 | Missing Referrer-Policy header | 🟢 LOW |
-| F10 | No security.txt file | 🟢 LOW |
+3. **Inspect sender domain & links** — Ran WHOIS, DNS (`dig`), SPF, and
+   DMARC lookups on sender domains. Used `curl -IL` to safely trace link
+   redirects without visiting pages directly.
 
----
+4. **Identify phishing indicators** — Applied a standardized checklist
+   covering sender/domain red flags, content/language red flags, and
+   link/attachment red flags.
 
-## Key Evidence
+5. **Classify risk** — Each sample was scored against the indicator
+   checklist and assigned one of three classifications:
+   - **Safe** — legitimate, verified sender and content
+   - **Suspicious** — some red flags present, requires verification
+   - **Phishing** — multiple confirmed indicators, malicious intent
 
-**Finding F1 — Live Cookie Proof (Firefox DevTools Console):**
-```javascript
-> document.cookie
-"PHPSESSID=9732e38f06e38d5e232aaaeab2c68e3e; security=low"
-```
-This confirms the session cookie is fully readable by JavaScript — HttpOnly flag is absent.
+6. **Document findings** — Each sample was documented with the raw
+   evidence, indicator table, plain-language explanation of the attack
+   ("How This Attack Works"), and final risk classification.
 
-**Finding F2 & F3 — curl Header Check:**
-```bash
-$ curl -sI http://localhost:42001 | grep -iE "server:|strict|x-frame|csp"
-Server: Apache/2.4.51 (Debian)
-X-Powered-By: PHP/7.4.3
-# All security headers: NO OUTPUT (missing)
-```
-
-**Finding F7 — Outdated jQuery:**
-```bash
-$ curl -s http://localhost:42001 | grep -i jquery
-<script src='/js/jquery-1.11.3.min.js'></script>
-```
+7. **Create awareness guidelines** — Synthesized findings into the
+   **SLAM method** (Sender, Links, Attachments, Message), a Do's & Don'ts
+   table for employees, an incident response checklist for users who click
+   a phishing link, and recommended technical defenses (SPF, DKIM, DMARC,
+   MFA) for organizations.
 
 ---
 
-## Remediation Quick Reference
+## 📊 Summary of Findings
 
-| Finding | Fix | Time |
-|---------|-----|------|
-| F1 | `session.cookie_httponly=1` in php.ini | 5 min |
-| F2 | Add HSTS header to Apache config | 10 min |
-| F3 | `ServerTokens Prod` + `expose_php=Off` | 5 min |
-| F4 | Add Content-Security-Policy header | 30 min |
-| F5 | `X-Frame-Options: SAMEORIGIN` | 2 min |
-| F6 | `X-Content-Type-Options: nosniff` | 2 min |
-| F7 | Upgrade jQuery → 3.7.x | 1 hr |
-| F8 | Delete phpinfo.php | 1 min |
-| F9 | Add Referrer-Policy header | 2 min |
-| F10 | Create `/.well-known/security.txt` | 2 min |
+| Sample | Subject | Attack Type | Risk Level |
+|---|---|---|---|
+| 1 | Amazon Account Verification | Credential Harvesting | **HIGH** |
+| 2 | SBI Account Suspended (OTP request) | Banking Fraud / OTP Interception | **CRITICAL** |
+| 3 | IT Helpdesk Password Reset | Corporate Credential Theft | **HIGH** |
+| 4 | Wells Fargo Security Alert (header spoofing) | Domain Spoofing / Brand Impersonation | **CRITICAL** |
 
-**Total estimated fix time: ~2 hours**
+**Common pattern across all 4 samples:**
+- Urgency and fear-based language
+- Lookalike or spoofed sender domains
+- Missing or failed SPF / DKIM / DMARC
+- Requests for credentials, OTPs, or clicks on disguised links
 
 ---
 
-## How to Reproduce This Audit
+## 📄 Report Contents
 
-### Step 1 — Set up DVWA on Kali Linux
-```bash
-sudo apt update && sudo apt install dvwa -y
-sudo dvwa-start
-# Access: http://localhost:42001 | Login: admin / password
-```
+The full report (`report/Phishing_Detection_Report_Atul_GITAM.docx`) includes:
 
-### Step 2 — Set target variable
-```bash
-TARGET="http://localhost:42001"
-```
-
-### Step 3 — Run all checks
-```bash
-# Headers
-curl -sI $TARGET
-
-# Security header check
-for h in "Strict-Transport-Security" "Content-Security-Policy" \
-  "X-Frame-Options" "X-Content-Type-Options" "Referrer-Policy"; do
-  result=$(curl -sI $TARGET | grep -i "$h")
-  [ -z "$result" ] && echo "[MISSING] $h" || echo "[PRESENT] $result"
-done
-
-# Sensitive paths
-for path in /admin /phpinfo.php /.git/HEAD /robots.txt /.env; do
-  CODE=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET$path")
-  echo "$CODE  $path"
-done
-
-# JS components
-curl -s $TARGET | grep -iE "jquery|bootstrap|angular"
-
-# Cookie proof (in Firefox DevTools Console)
-document.cookie
-```
-
-### Step 4 — Run OWASP ZAP
-```bash
-zaproxy &
-# Tools → Spider → URL: http://localhost:42001 → Start
-# Check Alerts tab for findings
-```
+- Introduction to phishing and attack types
+- Detailed analysis of all 4 samples (indicators, attack explanation, risk classification)
+- Risk classification framework (Safe / Suspicious / Phishing)
+- Master phishing indicator checklist
+- Prevention & awareness guidelines (SLAM method, Do's & Don'ts, incident response steps)
+- Technical defense recommendations for organizations (SPF, DKIM, DMARC, MFA)
 
 ---
 
-## Learning Outcomes
+## ⚠️ Disclaimer
 
-Through this project I learned to:
-- Perform a structured passive security assessment without active exploitation
-- Identify and classify web vulnerabilities by risk level (High / Medium / Low)
-- Use industry-standard tools: Nmap, curl, OWASP ZAP, Firefox DevTools
-- Produce professional vulnerability assessment documentation
-- Think like a security auditor — not an attacker
-
----
-
-## References
-
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Mozilla Security Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
-- [securityheaders.com](https://securityheaders.com)
-- [HSTS Preload List](https://hstspreload.org)
-- [DVWA Project](https://dvwa.co.uk)
-- [RFC 9116 — security.txt](https://www.rfc-editor.org/rfc/rfc9116)
-
----
+All content in this repository is for **educational and awareness purposes
+only**, created as part of the Future Interns Cyber Security Task 2
+internship program. No real systems were accessed, attacked, or exploited.
